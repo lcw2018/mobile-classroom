@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wys.mcr.mapper.PractiseCheckMapper">
+    <select id="queryCheckFirstPage" resultType="com.wys.mcr.common.dto.resp.CheckResp">
+        select e.thirdDeptId as deptId,d.`name` as deptName,count(*) as count,e.secondDeptId from `app_practiseCheck` e
+        left join app_dept d on
+        e.`thirdDeptId`=d.`deptId`
+        where e.level=3
+        <if test='likeName!= null and likeName != ""'>
+            and d.name like concat('%',#{likeName},'%')
+        </if>
+        <if test="fromDate != null">
+            and DATE_FORMAT(e.createDate,'%Y-%m-%d') >= DATE_FORMAT(#{fromDate},'%Y-%m-%d')
+        </if>
+        <if test="toDate != null">
+            and DATE_FORMAT(#{toDate},'%Y-%m-%d')>=DATE_FORMAT(e.createDate,'%Y-%m-%d')
+        </if>
+        group by e.thirdDeptId,d.`name`,e.secondDeptId
+        order by count desc
+    </select>
+
+    <select id="queryCheckSecondPage" resultType="com.wys.mcr.common.dto.resp.CheckResp">
+        select
+        e.userId, e.currentDeptId,
+        u.name as userName,
+        count(*) as count
+        from app_practiseCheck e left join app_user u on e.userId = u.policeId
+        where e.thirdDeptId = #{thirdDeptId}
+        <if test="fromDate != null">
+            and DATE_FORMAT(e.createDate,'%Y-%m-%d') >= DATE_FORMAT(#{fromDate},'%Y-%m-%d')
+        </if>
+        <if test="toDate != null">
+            and DATE_FORMAT(#{toDate},'%Y-%m-%d')>=DATE_FORMAT(e.createDate,'%Y-%m-%d')
+        </if>
+        group by e.userId, u.name, e.currentDeptId
+        order by count desc
+    </select>
+</mapper>
